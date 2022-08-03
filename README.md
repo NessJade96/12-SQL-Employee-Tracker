@@ -20,6 +20,8 @@ N/A at this stage
 1. Create database schema as per the img(data-schema.png) in assets. Create a seeds file to include some data during testing.
    (You might want to use a separate file that contains functions for performing specific SQL queries you'll need to use. A constructor function or class could be helpful for organizing these. You might also want to include a seeds.sql file to pre-populate your database, making the development of individual features much easier.)
 
+2. Write queries, write inquirer questions
+
 ## Screenshots:
 
 ![Finished product](./develop/public/assets/images/)
@@ -27,7 +29,7 @@ N/A at this stage
 ## Links:
 
 Walkthrough video:
-GitHub:
+GitHub: https://github.com/NessJade96/12-SQL-Employee-Tracker
 
 ## Commit notes:
 
