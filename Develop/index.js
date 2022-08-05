@@ -70,7 +70,6 @@ const mainMenu = [
 //function to render a table showing department names and ids
 function mainMenuQuestions() {
 	return inquirer.prompt(mainMenu).then((answers) => {
-		console.log(answers);
 		viewDepartments(answers);
 		viewEmployees(answers);
 		viewRoles(answers);
@@ -82,27 +81,21 @@ function mainMenuQuestions() {
 const renderEmployee = async (answers) => {
 	if (answers.menu === "Add an Employee") {
 		const rolesPromise = new Promise((res) => {
-			db.query("SELECT title FROM job", (err, results) => {
+			db.query("SELECT title, id FROM job", (err, results) => {
 				if (err) {
 					throw err;
 				}
-				return res(results.map(({ title }) => title));
+				return res(results);
 			});
 		});
-
 		const managersPromise = new Promise((res) => {
 			db.query(
-				"SELECT first_name, last_name FROM employee",
+				"SELECT first_name, last_name, id FROM employee",
 				(err, results) => {
 					if (err) {
 						throw err;
 					}
-					return res(
-						results.map(
-							({ first_name, last_name }) =>
-								`${first_name} ${last_name}`
-						)
-					);
+					return res(results);
 				}
 			);
 		});
@@ -111,6 +104,11 @@ const renderEmployee = async (answers) => {
 			rolesPromise,
 			managersPromise,
 		]);
+		const roleTitles = roles.map(({ title }) => title);
+		const managerNames = managers.map(
+			({ first_name, last_name }) => `${first_name} ${last_name}`
+		);
+		// get the id from the dbquery rolesPromise, then save as a variable(object), then create a new variable without the id in the object - use this one in the inquirer questions, then use the OG variable to .find() the matching id number. make sure you console log everything
 
 		inquirer
 			.prompt([
@@ -128,29 +126,39 @@ const renderEmployee = async (answers) => {
 					type: "list",
 					name: "employeeRole",
 					message: "What is the employee's role?",
-					choices: roles,
+					choices: roleTitles,
 				},
 				{
 					type: "list",
 					name: "employeeManager",
 					message: "Who is the employee's manager?",
-					choices: ["none", ...managers],
+					choices: ["none", ...managerNames],
 				},
 			])
 			.then((answers) => {
-				console.log(answers);
-				db.query("SELECT id FROM job", (err, results) => {
-					if (err) {
-						throw err;
-					}
-					console.log(results);
-					return results;
-				});
+				const selectedRole = roles.find(
+					(role) => role.title === answers.employeeRole
+				);
+				const selectedManager = managers.find(
+					(manager) =>
+						`${manager.first_name} ${manager.last_name}` ===
+						answers.employeeManager
+				);
+				const managersID = selectedManager ? selectedManager.id : 0;
+				const newEmployee = [
+					[
+						answers.employeeFirstName,
+						answers.employeeLastName,
+						selectedRole.id,
+						managersID,
+					],
+				];
 				db.query(
 					"INSERT INTO employee (first_name, last_name, job_id, manager_id) VALUES ?",
-					("first_name", "last_name", "job_id", "manager_id"),
+					[newEmployee],
 					function (err, result) {
 						if (err) throw err;
+						console.log("Employee added to system!");
 					}
 				);
 			});

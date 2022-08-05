@@ -58,3 +58,7 @@ GitHub: https://github.com/NessJade96/12-SQL-Employee-Tracker
 3. Got the database up and running and planted with seeds.
 
 4. Using inquirer I have created a prompt for the main menu. I have rendering the "view Employees, Roles, and Departments" tables when those choice are selected by the user in command line. To render the tables in node I am using the console.table package.
+
+5. Through database queries I have been able to render the job roles and managers in a list for the inqurier questions.
+
+6. using database queries and functions the "add an employee" option is now creating a new employee and adding it to the database.
