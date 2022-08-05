@@ -56,3 +56,5 @@ GitHub: https://github.com/NessJade96/12-SQL-Employee-Tracker
 2. Had chat with TA and gave me advice on where my main js code should be, and to remove my express lines.
 
 3. Got the database up and running and planted with seeds.
+
+4. Using inquirer I have created a prompt for the main menu. I have rendering the "view Employees, Roles, and Departments" tables when those choice are selected by the user in command line. To render the tables in node I am using the console.table package.

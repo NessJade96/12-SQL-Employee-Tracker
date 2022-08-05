@@ -1,11 +1,7 @@
-//https://www.npmjs.com/package/console.table
-// call once somewhere in the beginning of the app to enable pretty tables
-const cTable = require("console.table");
-
-// Import and require mysql2, inquirer, express
+// Imports mysql2, inquirer, console.table
 const inquirer = require("inquirer");
-
 const mysql = require("mysql2");
+const cTable = require("console.table");
 
 //creates port - and local host 3001
 const PORT = process.env.PORT || 3001;
@@ -18,6 +14,7 @@ const db = mysql.createConnection(
 		user: "root",
 		// MySQL password
 		password: "1234",
+		// database name
 		database: "company_db",
 	},
 	console.log(`Connected to the books_db database.`)
@@ -37,11 +34,6 @@ const db = mysql.createConnection(
 // 	}
 // );
 
-// Query database
-db.query("SELECT * FROM employee", function (err, results) {
-	console.log("List of employees", results);
-});
-
 // Default response for any other request (Not Found)
 // app.use((req, res) => {
 // 	res.status(404).end();
@@ -56,7 +48,6 @@ db.query("SELECT * FROM employee", function (err, results) {
 // 	console.log("connected at " + connection.threadId + "\n");
 // 	addCharacter();
 // });
-addCharacter();
 
 const mainMenu = [
 	{
@@ -74,66 +65,7 @@ const mainMenu = [
 			"Quit",
 		],
 	},
-	{
-		type: "input",
-		name: "first_name",
-		message: "What is your name?",
-	},
 ];
-
-function addCharacter() {
-	inquirer
-		.prompt(
-			/* Pass your questions in here */
-
-			[
-				{
-					type: "input",
-					name: "test",
-					message: "test",
-				},
-			]
-		)
-		.then(async (answers) => {
-			// Use user feedback for... whatever!!
-			console.log(answers);
-			const userInput = [answers];
-			console.log("testing user input", userInput);
-			await mainMenuQuestions(answers);
-			console.log("hell;o");
-			// renderEmployee(first_name, last_name, manager)
-			// db.createQuery(
-			// 	"INSERT INTO employee SET ?",
-			// 	{
-			// 		characterName: answers.characterName,
-			// 	},
-			// 	function (error) {
-			// 		if (error) throw error;
-			// 		console.log("added character");
-			// 		querying();
-			// 	}
-			// );
-
-			// .catch((error) => {
-			// 	if (error.isTtyError) {
-			// 		// Prompt couldn't be rendered in the current environment
-			// 	} else {
-			// 		// Something else went wrong
-			// 	}
-			// });
-		});
-}
-
-// //function to create employee-
-// const renderEmployee = ({ first_name, last_name, manager }) => {
-// 	db.query(
-// 		"INSERT INTO employee (first_name, last_name, manager)    VALUES ?",
-// 		("first_name", "last_name", "manager"),
-// 		function (err, result) {
-// 			if (err) throw err;
-// 		}
-// 	);
-// };
 
 //function to render a table showing department names and ids
 function mainMenuQuestions() {
@@ -142,8 +74,88 @@ function mainMenuQuestions() {
 		viewDepartments(answers);
 		viewEmployees(answers);
 		viewRoles(answers);
+		renderEmployee(answers);
 	});
 }
+
+// //function to create employee-
+const renderEmployee = async (answers) => {
+	if (answers.menu === "Add an Employee") {
+		const rolesPromise = new Promise((res) => {
+			db.query("SELECT title FROM job", (err, results) => {
+				if (err) {
+					throw err;
+				}
+				return res(results.map(({ title }) => title));
+			});
+		});
+
+		const managersPromise = new Promise((res) => {
+			db.query(
+				"SELECT first_name, last_name FROM employee",
+				(err, results) => {
+					if (err) {
+						throw err;
+					}
+					return res(
+						results.map(
+							({ first_name, last_name }) =>
+								`${first_name} ${last_name}`
+						)
+					);
+				}
+			);
+		});
+
+		const [roles, managers] = await Promise.all([
+			rolesPromise,
+			managersPromise,
+		]);
+
+		inquirer
+			.prompt([
+				{
+					type: "input",
+					name: "employeeFirstName",
+					message: "What is the employee's first name?",
+				},
+				{
+					type: "input",
+					name: "employeeLastName",
+					message: "What is the employee's last name?",
+				},
+				{
+					type: "list",
+					name: "employeeRole",
+					message: "What is the employee's role?",
+					choices: roles,
+				},
+				{
+					type: "list",
+					name: "employeeManager",
+					message: "Who is the employee's manager?",
+					choices: ["none", ...managers],
+				},
+			])
+			.then((answers) => {
+				console.log(answers);
+				db.query("SELECT id FROM job", (err, results) => {
+					if (err) {
+						throw err;
+					}
+					console.log(results);
+					return results;
+				});
+				db.query(
+					"INSERT INTO employee (first_name, last_name, job_id, manager_id) VALUES ?",
+					("first_name", "last_name", "job_id", "manager_id"),
+					function (err, result) {
+						if (err) throw err;
+					}
+				);
+			});
+	}
+};
 
 function viewDepartments(answers) {
 	if (answers.menu === "View All Departments") {
@@ -186,3 +198,5 @@ function viewRoles(answers) {
 		});
 	}
 }
+
+mainMenuQuestions();
