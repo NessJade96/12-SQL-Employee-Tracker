@@ -42,11 +42,11 @@ N/A at this stage
 
 ## Screenshots:
 
-![Finished product](./develop/public/assets/images/)
+![Showing All Employees](develop/assets/Capture.png)
 
 ## Links:
 
-Walkthrough video:
+Walkthrough video: https://drive.google.com/file/d/1L9ikOOUot32SQHY3XTBddZWpuoY_d8Pg/view
 GitHub: https://github.com/NessJade96/12-SQL-Employee-Tracker
 
 ## Commit notes:
@@ -65,4 +65,4 @@ GitHub: https://github.com/NessJade96/12-SQL-Employee-Tracker
 
 7. Using the 'new employee' db.query, I was able to quickly add the department and new role options to add to the database.
 
-8. Added in the update employee section that, then I needed to work on ensuring the menu would load back again after each selection was made. This was very tough to do and I spent a lot of time on this. Eventually I got this working by implimenting a switch/case/break system. Then also attaching another promise around the db.query for each function. 
+8. Added in the update employee section that, then I needed to work on ensuring the menu would load back again after each selection was made. This was very tough to do and I spent a lot of time on this. Eventually I got this working by implimenting a switch/case/break system. Then also attaching another promise around the db.query for each function.
