@@ -34,21 +34,7 @@ const db = mysql.createConnection(
 // 	}
 // );
 
-// Default response for any other request (Not Found)
-// app.use((req, res) => {
-// 	res.status(404).end();
-// });
-
-// app.listen(PORT, () => {
-// 	console.log(`Server running on port ${PORT}`);
-// });
-
-// db.connect(function (error) {
-// 	if (error) throw error;
-// 	console.log("connected at " + connection.threadId + "\n");
-// 	addCharacter();
-// });
-
+// Array containing the main menu inquirer prompts
 const mainMenu = [
 	{
 		type: "list",
@@ -74,10 +60,12 @@ function mainMenuQuestions() {
 		viewEmployees(answers);
 		viewRoles(answers);
 		renderEmployee(answers);
+		renderDepartment(answers);
+		renderRole(answers);
 	});
 }
 
-// //function to create employee-
+//function to create employee-
 const renderEmployee = async (answers) => {
 	if (answers.menu === "Add an Employee") {
 		const rolesPromise = new Promise((res) => {
@@ -108,7 +96,6 @@ const renderEmployee = async (answers) => {
 		const managerNames = managers.map(
 			({ first_name, last_name }) => `${first_name} ${last_name}`
 		);
-		// get the id from the dbquery rolesPromise, then save as a variable(object), then create a new variable without the id in the object - use this one in the inquirer questions, then use the OG variable to .find() the matching id number. make sure you console log everything
 
 		inquirer
 			.prompt([
@@ -165,6 +152,102 @@ const renderEmployee = async (answers) => {
 	}
 };
 
+// Create role on request
+const renderRole = async (answers) => {
+	if (answers.menu === "Add a Role") {
+		const rolesPromise = new Promise((res) => {
+			db.query("SELECT title, id FROM job", (err, results) => {
+				if (err) {
+					throw err;
+				}
+				return res(results);
+			});
+		});
+		const roles = await rolesPromise;
+		const roleTitles = roles.map(({ title }) => title);
+		console.log(
+			"🚀 ~ file: index.js ~ line 167 ~ renderRole ~ roleTitles",
+			roleTitles
+		);
+
+		inquirer
+			.prompt([
+				{
+					type: "input",
+					name: "roleName",
+					message: "What is the name of the new role?",
+				},
+				{
+					type: "input",
+					name: "roleSalary",
+					message: "What is the salary of the new role?",
+					validate: (answer) => {
+						if (isNaN(answer)) {
+							return "please enter a number";
+						}
+						return true;
+					},
+				},
+				{
+					type: "list",
+					name: "roleDepartmentId",
+					message: "What department is the new role in?",
+					choices: roleTitles,
+				},
+			])
+			.then((answers) => {
+				console.log(answers);
+				const selectedRole = roles.find(
+					(role) => role.title === answers.roleDepartmentId
+				);
+
+				const newRole = [
+					[answers.roleName, answers.roleSalary, selectedRole.id],
+				];
+
+				console.log(
+					"🚀 ~ file: index.js ~ line 199 ~ .then ~ newRole",
+					newRole
+				);
+				db.query(
+					"INSERT INTO job (title, salary, department_id) VALUES ?",
+					[newRole],
+					function (err, result) {
+						if (err) throw err;
+						console.log("New role added to system!");
+					}
+				);
+			});
+	}
+};
+
+// Create department on request
+const renderDepartment = async (answers) => {
+	if (answers.menu === "Add a Department") {
+		inquirer
+			.prompt([
+				{
+					type: "input",
+					name: "departmentName",
+					message: "What is the name of the department?",
+				},
+			])
+			.then((answers) => {
+				const newDepartment = [[[answers.departmentName]]];
+				db.query(
+					"INSERT INTO department (department_name) VALUES ?",
+
+					newDepartment,
+					function (err, result) {
+						if (err) throw err;
+						console.log("Department added to system!");
+					}
+				);
+			});
+	}
+};
+
+// This function allows the user to view the departments in a table
 function viewDepartments(answers) {
 	if (answers.menu === "View All Departments") {
 		db.query("SELECT * FROM department", function (err, results) {
@@ -179,6 +262,7 @@ function viewDepartments(answers) {
 	}
 }
 
+// This function allows the user to view the employees in a table
 function viewEmployees(answers) {
 	if (answers.menu === "View All Employees") {
 		db.query("SELECT * FROM employee", function (err, results) {
@@ -193,6 +277,7 @@ function viewEmployees(answers) {
 	}
 }
 
+// This function allows the user to view the roles in a table
 function viewRoles(answers) {
 	if (answers.menu === "View All Roles") {
 		db.query("SELECT * FROM job", function (err, results) {
@@ -207,4 +292,5 @@ function viewRoles(answers) {
 	}
 }
 
+// This starts the inquirer prompts :)
 mainMenuQuestions();

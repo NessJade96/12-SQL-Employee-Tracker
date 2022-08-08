@@ -62,3 +62,5 @@ GitHub: https://github.com/NessJade96/12-SQL-Employee-Tracker
 5. Through database queries I have been able to render the job roles and managers in a list for the inqurier questions.
 
 6. using database queries and functions the "add an employee" option is now creating a new employee and adding it to the database.
+
+7. Using the 'new employee' db.query, I was able to quickly add the department and new role options to add to the database.
