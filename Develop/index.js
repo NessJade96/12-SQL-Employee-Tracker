@@ -238,16 +238,21 @@ const updateEmployee = async (answers) => {
 
 // Create role on request
 const renderRole = async (answers) => {
-	const rolesPromise = new Promise((res) => {
-		db.query("SELECT title, id FROM job", (err, results) => {
-			if (err) {
-				throw err;
+	const departmentsPromise = new Promise((res) => {
+		db.query(
+			"SELECT department_name, id FROM department",
+			(err, results) => {
+				if (err) {
+					throw err;
+				}
+				return res(results);
 			}
-			return res(results);
-		});
+		);
 	});
-	const roles = await rolesPromise;
-	const roleTitles = roles.map(({ title }) => title);
+	const departments = await departmentsPromise;
+	const departmentNames = departments.map(
+		({ department_name }) => department_name
+	);
 	return inquirer
 		.prompt([
 			{
@@ -268,19 +273,19 @@ const renderRole = async (answers) => {
 			},
 			{
 				type: "list",
-				name: "roleDepartmentId",
+				name: "departmentId",
 				message: "What department is the new role in?",
-				choices: roleTitles,
+				choices: departmentNames,
 			},
 		])
 		.then((answers) => {
 			console.log(answers);
-			const selectedRole = roles.find(
-				(role) => role.title === answers.roleDepartmentId
+			const selectedDepartment = departments.find(
+				(department) =>
+					department.department_name === answers.departmentId
 			);
-
 			const newRole = [
-				[answers.roleName, answers.roleSalary, selectedRole.id],
+				[answers.roleName, answers.roleSalary, selectedDepartment.id],
 			];
 			return new Promise((resolve) => {
 				db.query(
